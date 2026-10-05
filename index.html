@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mokha Pilates - Cronograma y Alumnos</title>
+    <style>
+        :root {
+            --primary: #8c7a6b;
+            --primary-dark: #6e5e50;
+            --bg-color: #f7f5f0;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-radius: 12px;
+            --danger: #d9534f;
+            --danger-bg: #fdf2f2;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        header h1 {
+            color: var(--primary-dark);
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+        header p {
+            color: #777;
+            margin: 0;
+        }
+        .panel {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        .panel h3 {
+            margin-top: 0;
+            color: var(--primary-dark);
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            align-items: end;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--primary-dark);
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+        }
+        button:hover {
+            background-color: var(--primary-dark);
+        }
+        .search-box input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+        }
+        .search-results {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: var(--primary-dark);
+            font-weight: 500;
+        }
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .day-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-top: 5px solid var(--primary);
+        }
+        .day-card h3 {
+            margin-top: 0;
+            color: var(--primary-dark);
+            border-bottom: 2px solid #f0efed;
+            padding-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .slot-box {
+            background: #faf9f6;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #eee;
+            transition: all 0.3s;
+        }
+        .slot-box.full {
+            background: var(--danger-bg);
+            border-color: #f5c6cb;
+        }
+        .slot-time {
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: var(--primary-dark);
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .student-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .student-item {
+            background: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #e8e5df;
+        }
+        .delete-btn {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0;
+            font-weight: bold;
+        }
+        .delete-btn:hover {
+            color: #b52b27;
+        }
+        .badge {
+            background: #e3ded5;
+            color: var(--primary-dark);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+        .badge.full-badge {
+            background: var(--danger);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>MOKHA PILATES</h1>
+        <p>Gestión y Cronograma de Alumnos</p>
+    </header>
+
+    <!-- Panel de Búsqueda -->
+    <div class="panel">
+        <h3>🔍 Buscar Alumno</h3>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Escribí el nombre del alumno para buscar..." oninput="searchStudent()">
+        </div>
+        <div id="searchResults" class="search-results"></div>
+    </div>
+
+    <!-- Panel de Inscripción -->
+    <div class="panel">
+        <h3>Inscribir Alumno a Clase (Máx. 5 alumnos)</h3>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="studentName">Nombre del Alumno</label>
+                <input type="text" id="studentName" placeholder="Ej: María Pérez">
+            </div>
+            <div class="form-group">
+                <label for="classDay">Día</label>
+                <select id="classDay">
+                    <option value="Lunes">Lunes</option>
+                    <option value="Martes">Martes</option>
+                    <option value="Miércoles">Miércoles</option>
+                    <option value="Jueves">Jueves</option>
+                    <option value="Viernes">Viernes</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="classTime">Horario</label>
+                <select id="classTime">
+                    <option value="08:00 hs">08:00 hs</option>
+                    <option value="09:00 hs">09:00 hs</option>
+                    <option value="10:00 hs">10:00 hs</option>
+                    <option value="11:00 hs">11:00 hs</option>
+                    <option value="12:00 hs">12:00 hs</option>
+                    <option value="14:00 hs">14:00 hs</option>
+                    <option value="15:00 hs">15:00 hs</option>
+                    <option value="16:00 hs">16:00 hs</option>
+                    <option value="17:00 hs">17:00 hs</option>
+                    <option value="18:00 hs">18:00 hs</option>
+                    <option value="19:00 hs">19:00 hs</option>
+                    <option value="20:00 hs">20:00 hs</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <button onclick="addStudent()">Añadir a Clase</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grilla del Cronograma -->
+    <div class="schedule-grid" id="scheduleContainer"></div>
+</div>
+
+<script>
+    const MAX_CAPACITY = 5;
+
+    let scheduleData = JSON.parse(localStorage.getItem('mokhaPilatesData')) || {
+        "Lunes": { "08:00 hs": [], "09:00 hs": [], "10:00 hs": [], "11:00 hs": [], "12:00 hs": [], "14:00 hs": [], "15:00 hs": [], "16:00 hs": [], "17:00 hs": [], "18:00 hs": [],"19:00 hs": [],"20:00 hs": [] },
+        "Martes": { "08:00 hs": [], "09:00 hs": [], "10:00 hs": [], "11:00 hs": [], "12:00 hs": [], "14:00 hs": [], "15:00 hs": [], "16:00 hs": [], "17:00 hs": [], "18:00 hs": [],"19:00 hs": [],"20:00 hs": [] },
+        "Miércoles": { "08:00 hs": [], "09:00 hs": [], "10:00 hs": [], "11:00 hs": [], "12:00 hs": [], "14:00 hs": [], "15:00 hs": [], "16:00 hs": [], "17:00 hs": [], "18:00 hs": [],"19:00 hs": [],"20:00 hs": [] },
+        "Jueves": { "08:00 hs": [], "09:00 hs": [], "10:00 hs": [], "11:00 hs": [], "12:00 hs": [], "14:00 hs": [], "15:00 hs": [], "16:00 hs": [], "17:00 hs": [], "18:00 hs": [],"19:00 hs": [],"20:00 hs": [] },
+        "Viernes": { "08:00 hs": [], "09:00 hs": [], "10:00 hs": [], "11:00 hs": [], "12:00 hs": [], "14:00 hs": [], "15:00 hs": [], "16:00 hs": [], "17:00 hs": [], "18:00 hs": [],"19:00 hs": [],"20:00 hs": [] },
+    };
+
+    function saveData() {
+        localStorage.setItem('mokhaPilatesData', JSON.stringify(scheduleData));
+    }
+
+    function renderSchedule() {
+        const container = document.getElementById('scheduleContainer');
+        container.innerHTML = '';
+
+        for (const [day, times] of Object.entries(scheduleData)) {
+            let dayCard = document.createElement('div');
+            dayCard.className = 'day-card';
+            
+            let htmlContent = `<h3>${day}</h3>`;
+            
+            for (const [time, students] of Object.entries(times)) {
+                const isFull = students.length >= MAX_CAPACITY;
+                const slotClass = isFull ? 'slot-box full' : 'slot-box';
+                const badgeClass = isFull ? 'badge full-badge' : 'badge';
+                const badgeText = isFull ? `Completo (${students.length}/${MAX_CAPACITY})` : `${students.length}/${MAX_CAPACITY} lugares`;
+
+                htmlContent += `
+                    <div class="${slotClass}">
+                        <div class="slot-time">
+                            <span>${time}</span>
+                            <span class="${badgeClass}">${badgeText}</span>
+                        </div>
+                        <ul class="student-list">
+                `;
+                
+                if (students.length === 0) {
+                    htmlContent += `<li style="color:#aaa; font-size:0.85rem; padding:4px;">Sin alumnos inscriptos</li>`;
+                } else {
+                    students.forEach((student, index) => {
+                        htmlContent += `
+                            <li class="student-item">
+                                <span>${student}</span>
+                                <button class="delete-btn" onclick="removeStudent('${day}', '${time}', ${index})">&times;</button>
+                            </li>
+                        `;
+                    });
+                }
+                
+                htmlContent += `</ul></div>`;
+            }
+            
+            dayCard.innerHTML = htmlContent;
+            container.appendChild(dayCard);
+        }
+        
+        // Actualizar la búsqueda si hay texto escrito
+        searchStudent();
+    }
+
+    function addStudent() {
+        const nameInput = document.getElementById('studentName');
+        const daySelect = document.getElementById('classDay');
+        const timeSelect = document.getElementById('classTime');
+
+        const name = nameInput.value.trim();
+        const day = daySelect.value;
+        const time = timeSelect.value;
+
+        if (!name) {
+            alert('Por favor, ingresá el nombre del alumno.');
+            return;
+        }
+
+        // Asegurar estructura
+        if (!scheduleData[day]) scheduleData[day] = {};
+        if (!scheduleData[day][time]) scheduleData[day][time] = [];
+
+        // Validar cupo máximo
+        if (scheduleData[day][time].length >= MAX_CAPACITY) {
+            alert(`⚠️ ¡Atención! La clase de ${day} a las ${time} ya llegó al límite de ${MAX_CAPACITY} alumnos.`);
+            return;
+        }
+
+        scheduleData[day][time].push(name);
+        nameInput.value = '';
+        
+        saveData();
+        renderSchedule();
+    }
+
+    function removeStudent(day, time, index) {
+        scheduleData[day][time].splice(index, 1);
+        saveData();
+        renderSchedule();
+    }
+
+    function searchStudent() {
+        const query = document.getElementById('searchInput').value.trim().toLowerCase();
+        const resultsContainer = document.getElementById('searchResults');
+        
+        if (!query) {
+            resultsContainer.innerHTML = '';
+            return;
+        }
+
+        let foundMatches = [];
+
+        for (const [day, times] of Object.entries(scheduleData)) {
+            for (const [time, students] of Object.entries(times)) {
+                students.forEach(student => {
+                    if (student.toLowerCase().includes(query)) {
+                        foundMatches.push({ student, day, time });
+                    }
+                });
+            }
+        }
+
+        if (foundMatches.length === 0) {
+            resultsContainer.innerHTML = `❌ No se encontró ningún alumno con "${query}".`;
+        } else {
+            let html = `✅ Se encontraron ${foundMatches.length} coincidencia(s):<ul style="margin: 5px 0 0 15px; padding:0;">`;
+            foundMatches.forEach(m => {
+                html += `<li><b>${m.student}</b> cursa los <b>${m.day}</b> a las <b>${m.time}</b></li>`;
+            });
+            html += `</ul>`;
+            resultsContainer.innerHTML = html;
+        }
+    }
+
+    // Inicializar vista
+    renderSchedule();
+</script>
+
+</body>
+</html>
